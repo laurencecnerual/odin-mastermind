@@ -45,6 +45,18 @@ def prompt_valid_number()
   return current_guess
 end
 
+def generate_guess(secret, guesses_left)
+  if guesses_left > 3 * MAX_GUESSES / 4
+    return rand(0..9999).to_s.rjust(4, '0')
+  elsif guesses_left > 2 * MAX_GUESSES / 4
+    return rand(0..9).to_s + secret[1] + rand(0..99).to_s.rjust(2, '0')
+  elsif guesses_left > 1 * MAX_GUESSES / 4
+    return rand(0..9).to_s + secret[1] + rand(0..9).to_s + secret[3]
+  else
+    return secret[0..1] + rand(0..9).to_s + secret[3]
+  end
+end
+
 puts "Let's play a game of Mastermind! I'll choose the secret number, is that okay?"
 valid_answer = false
 
@@ -63,7 +75,7 @@ end
 
 if is_player_guessing
   secret_number = rand(0..9999).to_s.rjust(4, '0')
-  puts "I'm thinking of a 4 digit number. Can you guess what it is?"
+  puts "Ok, I've decided on a 4 digit number. Can you guess what it is?"
 else
   puts "Ok, you can choose the secret number then! What number do you want to use? I promise I'm not looking."
   secret_number = prompt_valid_number()
@@ -78,7 +90,7 @@ while !has_solved && remaining_guesses > 0
   if is_player_guessing
     current_guess = prompt_valid_number()
   else
-    current_guess = rand(0..9999).to_s.rjust(4, '0')
+    current_guess = generate_guess(secret_number, remaining_guesses)
     sleep(1.5)
     puts "I think your secret number is... #{current_guess}"
   end
@@ -91,7 +103,7 @@ while !has_solved && remaining_guesses > 0
     if is_player_guessing
       puts "That's right! My secret code was #{secret_number}. Congratulations! You win!"
     else
-      puts "I was right! I just knew that your secret code was #{secret_number}!"
+      puts "Aha, I was right! I just knew that your secret code was #{secret_number}!"
     end
 
     break
