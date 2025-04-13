@@ -1,9 +1,9 @@
-max_guesses = 12
-remaining_guesses = max_guesses
+MAX_GUESSES = 12
+remaining_guesses = MAX_GUESSES
 has_solved = false
-cpu_code = rand(0..9999).to_s.rjust(4, '0')
+is_player_guessing = true
 
-def analyzeDifference(secret, guess)
+def analyze_difference(secret, guess)
   correct_position_count = 0
   correct_number_count = 0
   secret_dict = {}
@@ -29,31 +29,81 @@ def analyzeDifference(secret, guess)
   return [correct_position_count, correct_number_count, guess.to_i > secret.to_i]
 end
 
-puts "Let's play a game! I'm thinking of a 4 digit number. Can you guess what it is?"
-puts ""
-
-while !has_solved && remaining_guesses > 0
+def prompt_valid_number()
   valid_input = false
 
   while !valid_input
-    puts "Guess ##{max_guesses - remaining_guesses + 1} of #{max_guesses}:"
-    user_guess = gets.chomp
+    current_guess = gets.chomp
 
-    if user_guess.length == 4 && user_guess.each_char.all? { |char| ('0'..'9').include?(char) }
+    if current_guess.length == 4 && current_guess.each_char.all? { |char| ('0'..'9').include?(char) }
       valid_input = true
     else
       puts "Please enter a 4 digit number"
     end
   end
 
-  if user_guess == cpu_code
+  return current_guess
+end
+
+puts "Let's play a game of Mastermind! I'll choose the secret number, is that okay?"
+valid_answer = false
+
+while !valid_answer
+  puts "Answer with y or n (meaning yes or no)"
+  player_decision = gets.chomp.downcase
+
+  if player_decision == "y" || player_decision == "n"
+    valid_answer = true
+  end
+end
+
+if player_decision == "n"
+  is_player_guessing = false
+end
+
+if is_player_guessing
+  secret_number = rand(0..9999).to_s.rjust(4, '0')
+  puts "I'm thinking of a 4 digit number. Can you guess what it is?"
+else
+  puts "Ok, you can choose the secret number then! What number do you want to use? I promise I'm not looking."
+  secret_number = prompt_valid_number()
+  puts "Great, it looks like that went through. Time for me to show you what I've got!" 
+end
+
+puts ""
+
+while !has_solved && remaining_guesses > 0
+  puts "Guess ##{MAX_GUESSES - remaining_guesses + 1} of #{MAX_GUESSES}:"
+
+  if is_player_guessing
+    current_guess = prompt_valid_number()
+  else
+    current_guess = rand(0..9999).to_s.rjust(4, '0')
+    sleep(1.5)
+    puts "I think your secret number is... #{current_guess}"
+  end
+
+  puts ""
+
+  if current_guess == secret_number
     has_solved = true
-    puts ""
-    puts "That's right! My secret code was #{cpu_code}. Congratulations! You win!"
+
+    if is_player_guessing
+      puts "That's right! My secret code was #{secret_number}. Congratulations! You win!"
+    else
+      puts "I was right! I just knew that your secret code was #{secret_number}!"
+    end
+
     break
   else
-    perfect_match_count, partial_match_count, is_too_high = analyzeDifference(cpu_code, user_guess)
-    puts "Nope, that's not it! Your guess is too #{is_too_high ? "high" : "low"}"
+    perfect_match_count, partial_match_count, is_too_high = analyze_difference(secret_number, current_guess)
+
+    if is_player_guessing
+      puts "Nope, that's not it! Your guess is too #{is_too_high ? "high" : "low"}"
+    else
+      puts "Hm, it seems my guess was too #{is_too_high ? "high" : "low"}"
+    end
+
     puts "#{perfect_match_count} digits are perfect as is"
     puts "#{partial_match_count} digits are in the wrong place"
     puts ""
@@ -62,5 +112,9 @@ while !has_solved && remaining_guesses > 0
 end
 
 if !has_solved
-  puts "I'm sorry, it's game over. You've run out of tries. My secret number was #{cpu_code}"
+  if is_player_guessing
+    puts "I'm sorry, it's game over. You've run out of tries. My secret number was #{secret_number}"
+  else
+    puts "Oh no, I've run out of tries. I couldn't guess that your secret number was #{secret_number}"
+  end  
 end
