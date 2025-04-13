@@ -26,7 +26,7 @@ def analyze_difference(secret, guess)
 
   correct_number_count -= correct_position_count
 
-  return [correct_position_count, correct_number_count, guess.to_i > secret.to_i]
+  [correct_position_count, correct_number_count, guess.to_i > secret.to_i]
 end
 
 def prompt_valid_number()
@@ -42,19 +42,23 @@ def prompt_valid_number()
     end
   end
 
-  return current_guess
+  current_guess
 end
 
 def generate_guess(secret, guesses_left)
-  if guesses_left > 3 * MAX_GUESSES / 4
-    return rand(0..9999).to_s.rjust(4, '0')
-  elsif guesses_left > 2 * MAX_GUESSES / 4
-    return rand(0..9).to_s + secret[1] + rand(0..99).to_s.rjust(2, '0')
-  elsif guesses_left > 1 * MAX_GUESSES / 4
-    return rand(0..9).to_s + secret[1] + rand(0..9).to_s + secret[3]
+  new_guess = ""
+
+  if guesses_left > 4 * MAX_GUESSES / 5
+    new_guess = rand(0..9999).to_s.rjust(4, '0')
+  elsif guesses_left > 3 * MAX_GUESSES / 5
+    new_guess = rand(0..9).to_s + secret[1] + rand(0..99).to_s.rjust(2, '0')
+  elsif guesses_left > 2 * MAX_GUESSES / 5
+    new_guess = rand(0..9).to_s + secret[1] + rand(0..9).to_s + secret[3]
   else
-    return secret[0..1] + rand(0..9).to_s + secret[3]
+    new_guess = secret[0..1] + rand(0..9).to_s + secret[3]
   end
+
+  new_guess
 end
 
 puts "Let's play a game of Mastermind! I'll choose the secret number, is that okay?"
@@ -127,6 +131,6 @@ if !has_solved
   if is_player_guessing
     puts "I'm sorry, it's game over. You've run out of tries. My secret number was #{secret_number}"
   else
-    puts "Oh no, I've run out of tries. I couldn't guess that your secret number was #{secret_number}"
+    puts "Oh no, I've run out of tries! I couldn't guess that your secret number was #{secret_number}"
   end  
 end
